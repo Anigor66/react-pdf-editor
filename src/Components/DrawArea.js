@@ -3,49 +3,20 @@ import Immutable from 'immutable'
 
 function DrawArea(props) {
   
-  const [lines, setLines] = useState([]);
-  const [page, setPage] = useState(1);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [flag, setFlag] = useState("");
-  const [redoEl, setRedoEl] = useState([]);
   const [isCrosshair, setIsCrosshair] = useState(false);
   const drawAreaEl = useRef(null);
 
   useEffect(() => {
-    document.getElementById("drawArea").addEventListener("mouseup", handleMouseUp);
+    drawAreaEl.current.addEventListener("mouseup", handleMouseUp);
     props.getBounds({
       x: drawAreaEl.current.getBoundingClientRect().left,
       y: drawAreaEl.current.getBoundingClientRect().bottom,
     })
     return () => {
-      document.getElementById("drawArea").removeEventListener("mouseup", handleMouseUp);
+      drawAreaEl.current.removeEventListener("mouseup", handleMouseUp);
     }
   },[])
-
-  useEffect(() => {
-    setPage(props.page);
-    setFlag(props.flag);
-  })
-
-  useEffect(() => {
-    if(props.flag === "undo")
-    {
-      setRedoEl(arr => [...arr,lines.pop()]);
-      setLines(lines);
-    }
-    if(props.flag === "redo")
-    {
-      setLines(lines => [...lines,redoEl.pop()]);
-    }
-    props.changeFlag();
-  },[flag])
-
-  useEffect(() => {
-    if(isDrawing === false && lines.length)
-    {
-      props.getPaths(lines[lines.length-1]);
-    }
-  },[isDrawing])
 
   const handleMouseUp = () => {
     setIsCrosshair(false);
@@ -60,10 +31,10 @@ function DrawArea(props) {
     const point = relativeCoordinatesForEvent(e);
     let obj = {
       arr: [point],
-      page: page,
+      page: props.page,
       type: "freehand",
     }
-    setLines(prevlines => [...prevlines,obj]);
+    props.getPaths(obj);
     setIsDrawing(true);
   }
 
@@ -72,11 +43,8 @@ function DrawArea(props) {
       return;
     }
     const point = relativeCoordinatesForEvent(e);
-    let last = lines.pop();
-    last.arr.push(point);
-    setLines(prevlines =>[...prevlines,last]);  
+    props.pushPoints(point);
   }
-
 
   const relativeCoordinatesForEvent = (e) => {
     const boundingRect = drawAreaEl.current.getBoundingClientRect();
@@ -88,7 +56,7 @@ function DrawArea(props) {
 
   const addMouseDown = () => {
     setIsCrosshair(true);
-    document.getElementById("drawArea").addEventListener("mousedown",handleMouseDown, { once: true });
+    drawAreaEl.current.addEventListener("mousedown",handleMouseDown, { once: true });
   }
 
   return (
@@ -97,11 +65,11 @@ function DrawArea(props) {
     <div
         id="drawArea"
         ref={drawAreaEl}
-        className = {isCrosshair ? "crosshair" : ""}
+        style = {isCrosshair ? {cursor: "crosshair"} : {cursor: props.cursor}}
         onMouseMove={handleMouseMove}
     >
       {props.children}
-      <Drawing lines={lines} page = {page}/>
+      <Drawing lines={props.result} page = {props.page}/>
     </div>
     </>
   )
@@ -119,16 +87,16 @@ function Drawing({ lines, page }) {
 }
 
 function DrawingLine({ line, page }) {
-  const pathData = "M " +
-    line.arr
-      .map(p => {
-        return `${p.get('x')},${p.get('y')}`;
-      })
-      .join(" L ");
-  
-  if(line.page === page)
+  if(line.page === page && line.type === "freehand")
   {
-    return <path className="path" d={pathData} />;
+      const pathData = "M " +
+      line.arr
+        .map(p => {
+          return `${p.get('x')},${p.get('y')}`;
+        })
+        .join(" L ");
+    
+      return <path className="path" d={pathData} />;
   }
   return null;
 }

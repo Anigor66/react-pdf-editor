@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import './App.css';
 import samplePDF from "./na.pdf";
 import SinglePage from './Components/SinglePage';
@@ -11,16 +11,25 @@ export default function App() {
   const [redoStack, setRedoStack] = useState([]);
   const [flag, setFlag] = useState("");
   const [bounds, setBounds] = useState({});
+  const [isText, setIsText] = useState(false);
   const tempRef = useRef(null);
 
   const pageChange = (num) => {
     setPageNumber(num);
   }
 
+  useEffect(() => {
+    if(isText)
+    {
+      setIsText(false);
+    }
+  },[result])
+
   const addText = () => {
+    setIsText(true);
     document.getElementById("drawArea").addEventListener("click", (e) => {
       e.preventDefault();
-      setResult(result => [...result, {id:generateKey(e.pageX), x: e.pageX, y: e.pageY -20, text: "", page: pageNumber, type: "text", ref: tempRef}]);
+      setResult(result => [...result, {id:generateKey(e.pageX), x: e.pageX, y: e.pageY -10, text: "", page: pageNumber, type: "text", ref: tempRef}]);
     }, { once: true });
   }
 
@@ -57,6 +66,11 @@ export default function App() {
     setResult(res => [...res,el]);
   }
 
+  const pushPoints = (el) => {
+    let last = result.pop();
+    last.arr.push(el);
+    setResult(res => [...res,last]);
+  }
   const getBounds = (obj) =>{
     setBounds(obj);
   }
@@ -105,7 +119,7 @@ export default function App() {
       <button onClick = {redo} style = {{marginTop: "1%"}}>Redo</button>
       <br></br>
       <button onClick={addText} style = {{marginTop: "1%"}}>Add Text</button>
-      <SinglePage pdf = {samplePDF} pageChange = {pageChange} getPaths = {getPaths} flag = {flag} getBounds ={getBounds} changeFlag = {changeFlag}/>
+      <SinglePage cursor = {isText ? "text": "default"} pushPoints = {pushPoints} pdf = {samplePDF} pageChange = {pageChange} getPaths = {getPaths} flag = {flag} getBounds ={getBounds} changeFlag = {changeFlag} result = {result}/>
       <ModifyPage pdf = {samplePDF} result = {result} bounds = {bounds}/>
       <hr></hr>
     </div>

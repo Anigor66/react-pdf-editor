@@ -5,6 +5,8 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 
 export default function SinglePage(props) {
 
+  const url = 'https://pdf-lib.js.org/assets/with_update_sections.pdf';
+
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1); 
 
@@ -33,15 +35,17 @@ export default function SinglePage(props) {
 
   return (
     <>
-   <div >
+   <div style = {props.style}>
       <Document
         file={pdf}
         options={{ workerSrc: "/pdf.worker.js" }}
+        onSourceError={(err) => console.log(err)}
+        onSourceSuccess={() => console.log("SUCCESS")}
         onLoadSuccess={onDocumentLoadSuccess}
-        
+        onLoadError={()=>console.log("ERR")}
       >
       
-      <DrawArea getPaths = {props.getPaths} page = {pageNumber} flag = {props.flag} getBounds = {props.getBounds} changeFlag = {props.changeFlag}>
+      <DrawArea getPaths = {props.getPaths} page = {pageNumber} flag = {props.flag} getBounds = {props.getBounds} changeFlag = {props.changeFlag} result = {props.result} pushPoints = {props.pushPoints} cursor = {props.cursor}>
         <Page pageNumber={pageNumber} />
       </DrawArea>
       </Document>

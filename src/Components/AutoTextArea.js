@@ -34,7 +34,7 @@ function AutoTextArea(props) {
 			<textarea
 				ref = {textAreaRef}
 				rows = {1}
-				style = {{height: textAreaHeight, zIndex: 10, background: "transparent", border: "none"}}
+				style = {{height: textAreaHeight, zIndex: 10, background: "transparent", border: "none", color:"red", fontFamily: "helvetica"}}
                 value = {text}
 				onChange = {onChangeHandler}
                 onBlur = {onBlurHandler}

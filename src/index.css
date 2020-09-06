@@ -97,7 +97,7 @@ svg {
 .path {
   fill: none;
   stroke-width: 1px;
-  stroke: black;
+  stroke: red;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
