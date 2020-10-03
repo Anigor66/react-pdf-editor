@@ -2,6 +2,7 @@ import React, {useState,useEffect,useRef} from "react";
 
 function AutoTextArea(props) {
 	const textAreaRef = useRef(null);
+	const divAreaRef = useRef(null);
 	const [text, setText] = useState(props.val);
 	const [textAreaHeight, setTextAreaHeight] = useState("auto");
     const [parentHeight, setParentHeight] = useState("auto");
@@ -22,7 +23,7 @@ function AutoTextArea(props) {
     };
     
     const onBlurHandler = () => {
-        props.onTextChange(props.unique_key,text,textAreaRef);
+        props.onTextChange(props.unique_key,text,divAreaRef);
 	}
 
 	return (
@@ -30,6 +31,7 @@ function AutoTextArea(props) {
 			style={{
 				minHeight: parentHeight,
 			}, props.style}
+			ref = {divAreaRef}
 		>
 			<textarea
 				ref = {textAreaRef}

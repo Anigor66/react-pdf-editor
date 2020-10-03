@@ -1,8 +1,8 @@
 import React from 'react'
 import { useState, useEffect, useRef } from 'react';
 
-function Draggable() {
-    const[pos,setPos] = useState({x: 800, y:500});
+function Draggable(props) {
+    const[pos,setPos] = useState({x: props.x, y:props.y});
     const[isDragging,setIsDragging] = useState(false);
     const[rel,setRel] = useState({x: 0, y: 0});
     const dragRef = useRef(null);
@@ -46,19 +46,16 @@ function Draggable() {
 
     return (
         <div style = {{
-            border: "2px solid #aa5", padding: 10,
             cursor: "pointer",
-            width: 200,
-            height: 200,
-            backgroundColor: "#cca",
             position: "absolute",
-            left: pos.x + 'px',
-            top: pos.y + 'px',
+            left: pos.x,
+            top: pos.y 
         }}
         ref = {dragRef}
-        onMouseDown = {handleMouseDown}
+        onDoubleClick = {handleMouseDown}
         onMouseUp = {handleMouseUp}
         onMouseMove = {handleMouseMove}>
+        {props.children}
         </div>
     )
 }

@@ -5,8 +5,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 
 export default function SinglePage(props) {
 
-  const url = 'https://pdf-lib.js.org/assets/with_update_sections.pdf';
-
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1); 
 
@@ -31,11 +29,12 @@ export default function SinglePage(props) {
     changePage(1);
   }
 
+  //Load PDF
   const { pdf } = props;
 
   return (
     <>
-   <div style = {props.style}>
+   <div >
       <Document
         file={pdf}
         options={{ workerSrc: "/pdf.worker.js" }}
@@ -45,7 +44,7 @@ export default function SinglePage(props) {
         onLoadError={()=>console.log("ERR")}
       >
       
-      <DrawArea getPaths = {props.getPaths} page = {pageNumber} flag = {props.flag} getBounds = {props.getBounds} changeFlag = {props.changeFlag} result = {props.result} pushPoints = {props.pushPoints} cursor = {props.cursor}>
+      <DrawArea getPaths = {props.getPaths} page = {pageNumber} flag = {props.flag} getBounds = {props.getBounds} changeFlag = {props.changeFlag} cursor = {props.cursor} buttonType = {props.buttonType} resetButtonType = {props.resetButtonType}>
         <Page pageNumber={pageNumber} />
       </DrawArea>
       </Document>
@@ -55,14 +54,14 @@ export default function SinglePage(props) {
           Page {pageNumber || (numPages ? 1 : "--")} of {numPages || "--"}
         </p>
         <button type="button" disabled={pageNumber <= 1} onClick={previousPage}>
-          Previous
+        <i style ={{fontSize: 25}} className="fa fa-fw fa-arrow-left"></i>
         </button>
         <button
           type="button"
           disabled={pageNumber >= numPages}
           onClick={nextPage}
         >
-          Next
+        <i style ={{fontSize: 25}} className="fa fa-fw fa-arrow-right"></i>
         </button>
       </div>
     </>

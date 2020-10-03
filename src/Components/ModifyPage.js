@@ -1,7 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 function ModifyPage(props) {
 
+    useEffect(() => {
+        if(props.buttonType === "download")
+        {
+            modifyPdf();
+            props.resetButtonType();
+        }
+    },[props.buttonType])
+    
     async function modifyPdf()
     {
           const existingPdfBytes = await fetch(props.pdf).then(res => 
@@ -17,13 +25,15 @@ function ModifyPage(props) {
         props.result.forEach((res) => {
             if(res.type === "text")
             {
+                console.log(res.x,res.y,res.ref.current.offsetLeft,res.ref.current.offsetTop);
+                console.log("Width",res.ref.current.getBoundingClientRect().width, res.ref.current.offsetWidth);
                 pages[res.page - 1].drawText(res.text, {
-                    x: res.x - props.bounds.x,
-                    y: props.bounds.y - res.y -17,
+                    x: res.ref.current.offsetLeft - props.bounds.x,
+                    y: props.bounds.y - res.ref.current.offsetTop -17,
                     size: textSize,
                     font: helveticaFont,
                     color: rgb(0.95, 0.1, 0.1),
-                    maxWidth: res.ref.current.offsetWidth,
+                    maxWidth: res.ref.current.getBoundingClientRect().width,
                     lineHeight: 15
                 })
             }
@@ -55,7 +65,7 @@ function ModifyPage(props) {
 
     return (
         <div>
-            <button style = {{marginTop: "1%"}} onClick = {modifyPdf}>Download PDF</button>
+            {/*<button style = {{marginTop: "1%"}} onClick = {modifyPdf}>Download PDF</button>*/}
         </div>
     )
 }

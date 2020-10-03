@@ -3,20 +3,50 @@ import Immutable from 'immutable'
 
 function DrawArea(props) {
   
+  const [lines, setLines] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [redoEl, setRedoEl] = useState([]);
   const [isCrosshair, setIsCrosshair] = useState(false);
   const drawAreaEl = useRef(null);
 
   useEffect(() => {
-    drawAreaEl.current.addEventListener("mouseup", handleMouseUp);
+    document.getElementById("drawArea").addEventListener("mouseup", handleMouseUp);
     props.getBounds({
       x: drawAreaEl.current.getBoundingClientRect().left,
       y: drawAreaEl.current.getBoundingClientRect().bottom,
     })
     return () => {
-      drawAreaEl.current.removeEventListener("mouseup", handleMouseUp);
+      document.getElementById("drawArea").removeEventListener("mouseup", handleMouseUp);
     }
   },[])
+
+  useEffect(() => {
+    if(props.flag === "undo")
+    {
+      setRedoEl(arr => [...arr,lines.pop()]);
+      setLines(lines);
+    }
+    if(props.flag === "redo")
+    {
+      setLines(lines => [...lines,redoEl.pop()]);
+    }
+    props.changeFlag();
+  },[props.flag])
+
+  useEffect(() => {
+    if(props.buttonType === "draw")
+    {
+      addMouseDown();
+      props.resetButtonType();
+    }
+  },[props.buttonType])
+
+  useEffect(() => {
+    if(isDrawing === false && lines.length)
+    {
+      props.getPaths(lines[lines.length-1]);
+    }
+  },[isDrawing])
 
   const handleMouseUp = () => {
     setIsCrosshair(false);
@@ -34,7 +64,7 @@ function DrawArea(props) {
       page: props.page,
       type: "freehand",
     }
-    props.getPaths(obj);
+    setLines(prevlines => [...prevlines,obj]);
     setIsDrawing(true);
   }
 
@@ -43,8 +73,11 @@ function DrawArea(props) {
       return;
     }
     const point = relativeCoordinatesForEvent(e);
-    props.pushPoints(point);
+    let last = lines.pop();
+    last.arr.push(point);
+    setLines(prevlines =>[...prevlines,last]);  
   }
+
 
   const relativeCoordinatesForEvent = (e) => {
     const boundingRect = drawAreaEl.current.getBoundingClientRect();
@@ -56,12 +89,12 @@ function DrawArea(props) {
 
   const addMouseDown = () => {
     setIsCrosshair(true);
-    drawAreaEl.current.addEventListener("mousedown",handleMouseDown, { once: true });
+    document.getElementById("drawArea").addEventListener("mousedown",handleMouseDown, { once: true });
   }
 
   return (
     <>
-    <button onClick = {addMouseDown} style = {{marginBottom: "1%", marginTop: "1%"}}>Draw</button>
+    {/*<button onClick = {addMouseDown} style = {{marginBottom: "1%", marginTop: "1%"}}>Draw</button>*/}
     <div
         id="drawArea"
         ref={drawAreaEl}
@@ -69,7 +102,7 @@ function DrawArea(props) {
         onMouseMove={handleMouseMove}
     >
       {props.children}
-      <Drawing lines={props.result} page = {props.page}/>
+      <Drawing lines={lines} page = {props.page}/>
     </div>
     </>
   )
@@ -87,16 +120,16 @@ function Drawing({ lines, page }) {
 }
 
 function DrawingLine({ line, page }) {
-  if(line.page === page && line.type === "freehand")
+  const pathData = "M " +
+    line.arr
+      .map(p => {
+        return `${p.get('x')},${p.get('y')}`;
+      })
+      .join(" L ");
+  
+  if(line.page === page)
   {
-      const pathData = "M " +
-      line.arr
-        .map(p => {
-          return `${p.get('x')},${p.get('y')}`;
-        })
-        .join(" L ");
-    
-      return <path className="path" d={pathData} />;
+    return <path className="path" d={pathData} />;
   }
   return null;
 }
